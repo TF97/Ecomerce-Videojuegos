@@ -349,7 +349,7 @@
     // --- VARIABLES GLOBALES INICIALES ---
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'gamevault-pro';
     const gamesPath = ['artifacts', appId, 'public', 'data', 'videojuegos'];
-    const FALLBACK_IMG = "https://placehold.co/400x200/161c2d/ffffff?text=GameVault+Pro";
+    const FALLBACK_IMG = "https://placehold.co/400x200/161c2d/ffffff?text=Imagen+No+Disponible";
     
     let firebaseConfig;
     try {
@@ -418,51 +418,68 @@
         const grid = document.getElementById('grid-productos');
         const adminBody = document.getElementById('admin-table-body');
         
-        grid.innerHTML = productos.map(p => `
-            <div class="col">
-                <div class="game-card h-100 d-flex flex-column">
-                    <div class="game-img-container">
-                        <img src="${p.imagen || FALLBACK_IMG}" 
-                             onerror="imgError(this)" 
-                             alt="${p.titulo}">
-                        <span class="platform-badge text-white">${p.plataforma}</span>
-                    </div>
-                    <div class="card-body p-4 d-flex flex-column">
-                        <h6 class="fw-bold text-white mb-1 text-truncate">${p.titulo}</h6>
-                        <span class="text-info fw-bold mb-3">$${p.precio}</span>
-                        <button onclick="addToCart('${p.id}')" class="btn btn-buy w-100 mt-auto">Añadir</button>
+        // Renderizado del GRID de la TIENDA
+        grid.innerHTML = productos.map(p => {
+            const imgUrl = p.imagen && p.imagen.trim() !== "" ? p.imagen : FALLBACK_IMG;
+            const tituloVal = p.titulo || "Juego sin nombre";
+            const plataformaVal = p.plataforma || "N/A";
+            const precioVal = p.precio !== undefined ? p.precio : "0.00";
+
+            return `
+                <div class="col">
+                    <div class="game-card h-100 d-flex flex-column">
+                        <div class="game-img-container">
+                            <img src="${imgUrl}" 
+                                 onerror="imgError(this)" 
+                                 alt="${tituloVal}">
+                            <span class="platform-badge text-white">${plataformaVal}</span>
+                        </div>
+                        <div class="card-body p-4 d-flex flex-column">
+                            <h6 class="fw-bold text-white mb-1 text-truncate">${tituloVal}</h6>
+                            <span class="text-info fw-bold mb-3">$${precioVal}</span>
+                            <button onclick="addToCart('${p.id}')" class="btn btn-buy w-100 mt-auto">Añadir</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
-        adminBody.innerHTML = productos.map(p => `
-            <tr class="border-bottom border-white border-opacity-5">
-                <td class="ps-4">
-                    <div class="d-flex align-items-center">
-                        <img src="${p.imagen || FALLBACK_IMG}" 
-                             onerror="imgError(this)"
-                             class="rounded me-3" style="width: 40px; height: 25px; object-fit: cover;">
-                        <span>${p.titulo}</span>
-                    </div>
-                </td>
-                <td><span class="badge bg-dark border border-secondary">${p.plataforma}</span></td>
-                <td class="text-info">$${p.precio}</td>
-                <td class="text-end pe-4">
-                    <button onclick="abrirModalEditar('${p.id}')" class="btn btn-link text-warning p-1"><i class="fa-solid fa-pen"></i></button>
-                    <button onclick="eliminarProducto('${p.id}')" class="btn btn-link text-danger p-1"><i class="fa-solid fa-trash"></i></button>
-                </td>
-            </tr>
-        `).join('');
+        // Renderizado de la TABLA de ADMIN
+        adminBody.innerHTML = productos.map(p => {
+            const imgUrl = p.imagen && p.imagen.trim() !== "" ? p.imagen : FALLBACK_IMG;
+            const tituloVal = p.titulo || "Sin nombre";
+            const plataformaVal = p.plataforma || "N/A";
+            const precioVal = p.precio !== undefined ? p.precio : "0.00";
+
+            return `
+                <tr class="border-bottom border-white border-opacity-5">
+                    <td class="ps-4">
+                        <div class="d-flex align-items-center">
+                            <img src="${imgUrl}" 
+                                 onerror="imgError(this)"
+                                 class="rounded me-3" style="width: 40px; height: 25px; object-fit: cover;">
+                            <span>${tituloVal}</span>
+                        </div>
+                    </td>
+                    <td><span class="badge bg-dark border border-secondary">${plataformaVal}</span></td>
+                    <td class="text-info">$${precioVal}</td>
+                    <td class="text-end pe-4">
+                        <button onclick="abrirModalEditar('${p.id}')" class="btn btn-link text-warning p-1"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="eliminarProducto('${p.id}')" class="btn btn-link text-danger p-1"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
     };
 
     window.addToCart = (id) => {
         const p = productos.find(x => x.id === id);
+        if (!p) return;
         const item = cart.find(c => c.id === id);
         if (item) item.cantidad++;
         else cart.push({...p, cantidad: 1});
         updateCartUI();
-        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Listo', showConfirmButton: false, timer: 1000, background: '#161c2d', color: '#fff' });
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Añadido', showConfirmButton: false, timer: 1000, background: '#161c2d', color: '#fff' });
     };
 
     window.updateQty = (index, delta) => {
@@ -486,7 +503,7 @@
             container.innerHTML = cart.map((item, i) => `
                 <div class="mb-3 bg-white bg-opacity-5 p-3 rounded-4">
                     <div class="d-flex justify-content-between mb-2">
-                        <span class="small fw-bold text-truncate">${item.titulo}</span>
+                        <span class="small fw-bold text-truncate">${item.titulo || 'Juego'}</span>
                         <span class="text-info">$${(item.precio * item.cantidad).toFixed(2)}</span>
                     </div>
                     <div class="qty-controls" style="width: fit-content;">
@@ -518,7 +535,7 @@
         document.getElementById('receipt-order-id').innerText = Math.random().toString(36).substr(2, 9).toUpperCase();
         document.getElementById('receipt-total').innerText = `$${total}`;
         document.getElementById('receipt-items-list').innerHTML = cart.map(item => `
-            <tr><td>${item.titulo}</td><td class="text-center">x${item.cantidad}</td><td class="text-end">$${(item.precio * item.cantidad).toFixed(2)}</td></tr>
+            <tr><td>${item.titulo || 'Juego'}</td><td class="text-center">x${item.cantidad}</td><td class="text-end">$${(item.precio * item.cantidad).toFixed(2)}</td></tr>
         `).join('');
         
         document.getElementById('view-normal').style.display = 'none';
@@ -551,7 +568,7 @@
 
     document.getElementById('checkoutForm').addEventListener('submit', (e) => {
         e.preventDefault();
-        Swal.fire({ title: '¡Éxito!', text: 'Pedido procesado.', icon: 'success', background: '#161c2d', color: '#fff' })
+        Swal.fire({ title: '¡Éxito!', text: 'Pedido procesado correctamente.', icon: 'success', background: '#161c2d', color: '#fff' })
             .then(() => { cart = []; updateCartUI(); showHome(); });
     });
 
@@ -565,33 +582,73 @@
         document.getElementById('admin-actions').classList.toggle('d-none', !admin);
     };
 
-    window.abrirModalCrear = () => { document.getElementById('gameForm').reset(); document.getElementById('game-id').value = ''; modal.show(); };
+    window.abrirModalCrear = () => { 
+        document.getElementById('gameForm').reset(); 
+        document.getElementById('game-id').value = ''; 
+        document.getElementById('modalTitle').innerText = 'Nuevo Juego';
+        modal.show(); 
+    };
+
     window.abrirModalEditar = (id) => {
         const p = productos.find(x => x.id === id);
+        if (!p) return;
         document.getElementById('game-id').value = p.id;
-        document.getElementById('titulo').value = p.titulo;
-        document.getElementById('plataforma').value = p.plataforma;
-        document.getElementById('precio').value = p.precio;
-        document.getElementById('imagen').value = p.imagen;
+        document.getElementById('titulo').value = p.titulo || "";
+        document.getElementById('plataforma').value = p.plataforma || "PC";
+        document.getElementById('precio').value = p.precio || "";
+        document.getElementById('imagen').value = p.imagen || "";
+        document.getElementById('modalTitle').innerText = 'Editar Juego';
         modal.show();
     };
 
     window.procesarFormulario = async () => {
         const id = document.getElementById('game-id').value;
+        const titulo = document.getElementById('titulo').value;
+        const precio = parseFloat(document.getElementById('precio').value);
+
+        if (!titulo || isNaN(precio)) {
+            Swal.fire({ icon: 'error', title: 'Datos incompletos', text: 'Por favor rellene el título y el precio.', background: '#161c2d', color: '#fff' });
+            return;
+        }
+
         const data = {
-            titulo: document.getElementById('titulo').value,
+            titulo: titulo,
             plataforma: document.getElementById('plataforma').value,
-            precio: parseFloat(document.getElementById('precio').value),
-            imagen: document.getElementById('imagen').value || FALLBACK_IMG
+            precio: precio,
+            imagen: document.getElementById('imagen').value || ""
         };
-        if (id) await updateDoc(doc(db, ...gamesPath, id), data);
-        else await addDoc(collection(db, ...gamesPath), data);
-        modal.hide();
+
+        try {
+            if (id) {
+                await updateDoc(doc(db, ...gamesPath, id), data);
+            } else {
+                await addDoc(collection(db, ...gamesPath), data);
+            }
+            modal.hide();
+        } catch (error) {
+            console.error("Error guardando:", error);
+        }
     };
 
     window.eliminarProducto = async (id) => {
-        if ((await Swal.fire({ title: '¿Borrar?', showCancelButton: true, background: '#161c2d', color: '#fff' })).isConfirmed)
-            await deleteDoc(doc(db, ...gamesPath, id));
+        const result = await Swal.fire({ 
+            title: '¿Eliminar juego?', 
+            text: "Esta acción no se puede deshacer.",
+            icon: 'warning',
+            showCancelButton: true, 
+            confirmButtonText: 'Sí, borrar',
+            cancelButtonText: 'Cancelar',
+            background: '#161c2d', 
+            color: '#fff' 
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await deleteDoc(doc(db, ...gamesPath, id));
+            } catch (error) {
+                console.error("Error eliminando:", error);
+            }
+        }
     };
 </script>
 </body>
