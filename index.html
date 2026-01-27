@@ -398,6 +398,7 @@
                 console.log("Productos cargados:", productos); // Depuración en consola
                 document.getElementById('loader').style.display = 'none';
                 render();
+                updateCartUI(); // Asegurar que el carrito se refresca si los productos cambian
             }, (err) => {
                 console.error("Firestore Error:", err);
                 document.getElementById('loader').style.display = 'none';
@@ -425,7 +426,6 @@
         
         // Renderizado del GRID de la TIENDA
         grid.innerHTML = productos.map(p => {
-            // Intentamos obtener el título e imagen de varios posibles nombres de campo
             const tituloVal = getVal(p, ['titulo', 'title', 'nombre', 'name'], "Juego sin nombre");
             const imgUrlRaw = getVal(p, ['imagen', 'image', 'url', 'cover'], "");
             const imgUrl = (imgUrlRaw && imgUrlRaw.trim() !== "") ? imgUrlRaw : FALLBACK_IMG;
@@ -496,10 +496,13 @@
         updateCartUI();
     };
 
-    function updateCartUI() {
+    window.updateCartUI = () => {
         const count = cart.reduce((a, b) => a + b.cantidad, 0);
         document.getElementById('cart-counter').innerText = count;
-        const total = cart.reduce((a, b) => a + (b.precio * b.cantidad), 0).toFixed(2);
+        const total = cart.reduce((a, b) => {
+            const precio = b.precio || 0;
+            return a + (precio * b.cantidad);
+        }, 0).toFixed(2);
         
         const footer = document.getElementById('cart-footer');
         const empty = document.getElementById('cart-empty-msg');
@@ -509,17 +512,30 @@
             footer.classList.remove('d-none'); empty.classList.add('d-none');
             document.getElementById('cart-total-amount').innerText = `$${total}`;
             container.innerHTML = cart.map((item, i) => {
+                // USAR getVal AQUÍ TAMBIÉN PARA EL CARRITO
                 const titulo = getVal(item, ['titulo', 'title', 'nombre', 'name'], "Juego");
+                const precio = item.precio || 0;
+                const imgUrlRaw = getVal(item, ['imagen', 'image', 'url', 'cover'], "");
+                const imgUrl = (imgUrlRaw && imgUrlRaw.trim() !== "") ? imgUrlRaw : FALLBACK_IMG;
+
                 return `
                 <div class="mb-3 bg-white bg-opacity-5 p-3 rounded-4">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="small fw-bold text-truncate">${titulo}</span>
-                        <span class="text-info">$${(item.precio * item.cantidad).toFixed(2)}</span>
+                    <div class="d-flex align-items-center mb-2">
+                        <img src="${imgUrl}" onerror="imgError(this)" class="rounded me-3" style="width: 50px; height: 30px; object-fit: cover;">
+                        <div class="flex-grow-1 overflow-hidden">
+                            <div class="d-flex justify-content-between">
+                                <span class="small fw-bold text-truncate me-2">${titulo}</span>
+                                <span class="text-info small fw-bold">$${(precio * item.cantidad).toFixed(2)}</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="qty-controls" style="width: fit-content;">
-                        <button class="qty-btn" onclick="updateQty(${i}, -1)">-</button>
-                        <span class="px-2 small">${item.cantidad}</span>
-                        <button class="qty-btn" onclick="updateQty(${i}, 1)">+</button>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="qty-controls">
+                            <button class="qty-btn" onclick="updateQty(${i}, -1)">-</button>
+                            <span class="px-2 small">${item.cantidad}</span>
+                            <button class="qty-btn" onclick="updateQty(${i}, 1)">+</button>
+                        </div>
+                        <button class="btn btn-link text-danger p-0 small" onclick="updateQty(${i}, -${item.cantidad})">Eliminar</button>
                     </div>
                 </div>
             `}).join('');
@@ -541,12 +557,13 @@
     window.finalizarCompra = () => {
         offcanvasCart.hide();
         currentView = "receipt";
-        const total = cart.reduce((a, b) => a + (b.precio * b.cantidad), 0).toFixed(2);
+        const total = cart.reduce((a, b) => a + ((b.precio || 0) * b.cantidad), 0).toFixed(2);
         document.getElementById('receipt-order-id').innerText = Math.random().toString(36).substr(2, 9).toUpperCase();
         document.getElementById('receipt-total').innerText = `$${total}`;
         document.getElementById('receipt-items-list').innerHTML = cart.map(item => {
             const titulo = getVal(item, ['titulo', 'title', 'nombre', 'name'], "Juego");
-            return `<tr><td>${titulo}</td><td class="text-center">x${item.cantidad}</td><td class="text-end">$${(item.precio * item.cantidad).toFixed(2)}</td></tr>`
+            const precio = item.precio || 0;
+            return `<tr><td>${titulo}</td><td class="text-center">x${item.cantidad}</td><td class="text-end">$${(precio * item.cantidad).toFixed(2)}</td></tr>`
         }).join('');
         
         document.getElementById('view-normal').style.display = 'none';
