@@ -49,8 +49,8 @@
             font-weight: 800;
             letter-spacing: -1px;
             background: var(--accent-gradient);
-            background-clip: text;
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             cursor: pointer;
         }
@@ -103,7 +103,7 @@
             border-radius: 20px; overflow: hidden; transition: all 0.3s ease;
         }
 
-        .game-img-container { height: 180px; position: relative; }
+        .game-img-container { height: 180px; position: relative; background: #000; }
         .game-img-container img { width: 100%; height: 100%; object-fit: cover; }
 
         .platform-badge {
@@ -306,7 +306,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label text-secondary small fw-bold">URL DE PORTADA</label>
-                        <input type="text" id="imagen" class="form-control form-control-custom">
+                        <input type="text" id="imagen" class="form-control form-control-custom" placeholder="URL de la imagen">
                     </div>
                 </form>
             </div>
@@ -342,13 +342,14 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script type="module">
-     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
     import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
     // --- VARIABLES GLOBALES INICIALES ---
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'gamevault-pro';
     const gamesPath = ['artifacts', appId, 'public', 'data', 'videojuegos'];
+    const FALLBACK_IMG = "https://placehold.co/400x200/161c2d/ffffff?text=GameVault+Pro";
     
     let firebaseConfig;
     try {
