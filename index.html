@@ -346,11 +346,10 @@
     import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
     import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-    // --- VARIABLES GLOBALES INICIALES ---
+    // --- CONFIGURACIÓN ---
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'gamevault-pro';
     const gamesPath = ['artifacts', appId, 'public', 'data', 'videojuegos'];
     const FALLBACK_IMG = "https://placehold.co/400x200/161c2d/ffffff?text=Imagen+No+Disponible";
-    
     let firebaseConfig;
     try {
         // REEMPLAZA ESTO PARA PRODUCCIÓN EN NETLIFY
@@ -386,9 +385,7 @@
             } else {
                 await signInAnonymously(auth);
             }
-        } catch (e) {
-            console.error("Auth Error:", e);
-        }
+        } catch (e) { console.error("Auth Error:", e); }
     };
 
     onAuthStateChanged(auth, (user) => {
@@ -398,6 +395,7 @@
         unsubscribes = [
             onSnapshot(collection(db, ...gamesPath), (snap) => {
                 productos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                console.log("Productos cargados:", productos); // Depuración en consola
                 document.getElementById('loader').style.display = 'none';
                 render();
             }, (err) => {
@@ -407,22 +405,31 @@
         ];
     });
 
-    // Función global para manejar errores de imagen
     window.imgError = (img) => {
-        img.onerror = null; // Prevenir bucles infinitos
+        img.onerror = null;
         img.src = FALLBACK_IMG;
     };
 
-    // --- LÓGICA DE TIENDA ---
+    // --- LÓGICA DE TIENDA "SMART" ---
+    // Esta función intenta obtener el valor de un campo aunque el nombre sea diferente en Firestore
+    const getVal = (obj, keys, fallback = "") => {
+        for(let key of keys) {
+            if(obj[key] !== undefined && obj[key] !== null) return obj[key];
+        }
+        return fallback;
+    };
+
     window.render = () => {
         const grid = document.getElementById('grid-productos');
         const adminBody = document.getElementById('admin-table-body');
         
         // Renderizado del GRID de la TIENDA
         grid.innerHTML = productos.map(p => {
-            const imgUrl = p.imagen && p.imagen.trim() !== "" ? p.imagen : FALLBACK_IMG;
-            const tituloVal = p.titulo || "Juego sin nombre";
-            const plataformaVal = p.plataforma || "N/A";
+            // Intentamos obtener el título e imagen de varios posibles nombres de campo
+            const tituloVal = getVal(p, ['titulo', 'title', 'nombre', 'name'], "Juego sin nombre");
+            const imgUrlRaw = getVal(p, ['imagen', 'image', 'url', 'cover'], "");
+            const imgUrl = (imgUrlRaw && imgUrlRaw.trim() !== "") ? imgUrlRaw : FALLBACK_IMG;
+            const plataformaVal = getVal(p, ['plataforma', 'platform'], "N/A");
             const precioVal = p.precio !== undefined ? p.precio : "0.00";
 
             return `
@@ -446,9 +453,10 @@
 
         // Renderizado de la TABLA de ADMIN
         adminBody.innerHTML = productos.map(p => {
-            const imgUrl = p.imagen && p.imagen.trim() !== "" ? p.imagen : FALLBACK_IMG;
-            const tituloVal = p.titulo || "Sin nombre";
-            const plataformaVal = p.plataforma || "N/A";
+            const tituloVal = getVal(p, ['titulo', 'title', 'nombre', 'name'], "Sin nombre");
+            const imgUrlRaw = getVal(p, ['imagen', 'image', 'url', 'cover'], "");
+            const imgUrl = (imgUrlRaw && imgUrlRaw.trim() !== "") ? imgUrlRaw : FALLBACK_IMG;
+            const plataformaVal = getVal(p, ['plataforma', 'platform'], "N/A");
             const precioVal = p.precio !== undefined ? p.precio : "0.00";
 
             return `
@@ -500,10 +508,12 @@
         if (cart.length > 0) {
             footer.classList.remove('d-none'); empty.classList.add('d-none');
             document.getElementById('cart-total-amount').innerText = `$${total}`;
-            container.innerHTML = cart.map((item, i) => `
+            container.innerHTML = cart.map((item, i) => {
+                const titulo = getVal(item, ['titulo', 'title', 'nombre', 'name'], "Juego");
+                return `
                 <div class="mb-3 bg-white bg-opacity-5 p-3 rounded-4">
                     <div class="d-flex justify-content-between mb-2">
-                        <span class="small fw-bold text-truncate">${item.titulo || 'Juego'}</span>
+                        <span class="small fw-bold text-truncate">${titulo}</span>
                         <span class="text-info">$${(item.precio * item.cantidad).toFixed(2)}</span>
                     </div>
                     <div class="qty-controls" style="width: fit-content;">
@@ -512,7 +522,7 @@
                         <button class="qty-btn" onclick="updateQty(${i}, 1)">+</button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         } else {
             footer.classList.add('d-none'); empty.classList.remove('d-none'); container.innerHTML = '';
         }
@@ -534,9 +544,10 @@
         const total = cart.reduce((a, b) => a + (b.precio * b.cantidad), 0).toFixed(2);
         document.getElementById('receipt-order-id').innerText = Math.random().toString(36).substr(2, 9).toUpperCase();
         document.getElementById('receipt-total').innerText = `$${total}`;
-        document.getElementById('receipt-items-list').innerHTML = cart.map(item => `
-            <tr><td>${item.titulo || 'Juego'}</td><td class="text-center">x${item.cantidad}</td><td class="text-end">$${(item.precio * item.cantidad).toFixed(2)}</td></tr>
-        `).join('');
+        document.getElementById('receipt-items-list').innerHTML = cart.map(item => {
+            const titulo = getVal(item, ['titulo', 'title', 'nombre', 'name'], "Juego");
+            return `<tr><td>${titulo}</td><td class="text-center">x${item.cantidad}</td><td class="text-end">$${(item.precio * item.cantidad).toFixed(2)}</td></tr>`
+        }).join('');
         
         document.getElementById('view-normal').style.display = 'none';
         document.getElementById('view-receipt').style.display = 'block';
@@ -593,10 +604,10 @@
         const p = productos.find(x => x.id === id);
         if (!p) return;
         document.getElementById('game-id').value = p.id;
-        document.getElementById('titulo').value = p.titulo || "";
-        document.getElementById('plataforma').value = p.plataforma || "PC";
+        document.getElementById('titulo').value = getVal(p, ['titulo', 'title', 'nombre', 'name'], "");
+        document.getElementById('plataforma').value = getVal(p, ['plataforma', 'platform'], "PC");
         document.getElementById('precio').value = p.precio || "";
-        document.getElementById('imagen').value = p.imagen || "";
+        document.getElementById('imagen').value = getVal(p, ['imagen', 'image', 'url', 'cover'], "");
         document.getElementById('modalTitle').innerText = 'Editar Juego';
         modal.show();
     };
@@ -625,9 +636,7 @@
                 await addDoc(collection(db, ...gamesPath), data);
             }
             modal.hide();
-        } catch (error) {
-            console.error("Error guardando:", error);
-        }
+        } catch (error) { console.error("Error guardando:", error); }
     };
 
     window.eliminarProducto = async (id) => {
@@ -645,9 +654,7 @@
         if (result.isConfirmed) {
             try {
                 await deleteDoc(doc(db, ...gamesPath, id));
-            } catch (error) {
-                console.error("Error eliminando:", error);
-            }
+            } catch (error) { console.error("Error eliminando:", error); }
         }
     };
 </script>
