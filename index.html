@@ -49,6 +49,7 @@
             font-weight: 800;
             letter-spacing: -1px;
             background: var(--accent-gradient);
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             cursor: pointer;
@@ -61,38 +62,22 @@
         }
 
         .nav-btn-circle {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 42px; height: 42px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .nav-btn-circle:hover {
-            background: var(--accent-color);
-            border-color: var(--accent-color);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+            background: var(--accent-color); border-color: var(--accent-color);
+            transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
         }
 
-        .nav-btn-circle.disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
+        .nav-btn-circle.disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
 
         .profile-switch {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 4px;
-            display: flex;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 4px;
+            display: flex; border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .profile-btn {
@@ -128,11 +113,6 @@
         }
 
         .btn-buy { background: var(--accent-gradient); color: white; border: none; }
-        .btn-outline-custom {
-            border: 1px solid var(--accent-color); color: var(--accent-color);
-            background: transparent; transition: all 0.3s;
-        }
-        .btn-outline-custom:hover { background: var(--accent-color); color: white; }
 
         .receipt-container {
             background: var(--card-bg); border-radius: 24px;
@@ -176,7 +156,7 @@
 
 <div id="loader">
     <div class="loader-circle mb-4"></div>
-    <div class="h5 fw-light">SISTEMA GAMEVAULT LISTO...</div>
+    <div class="h5 fw-light">INICIALIZANDO GAMEVAULT...</div>
 </div>
 
 <nav class="navbar navbar-dark sticky-top">
@@ -208,6 +188,7 @@
 </nav>
 
 <div id="main-content" class="container mt-5">
+    <!-- View Normal -->
     <div id="view-normal">
         <div class="row align-items-end mb-5">
             <div class="col">
@@ -233,7 +214,7 @@
         <div id="grid-productos" class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4 pb-5"></div>
     </div>
 
-    <!-- Vistas de recibo y checkout (se mantienen igual) -->
+    <!-- View Receipt -->
     <div id="view-receipt" style="display: none;">
         <div class="receipt-container">
             <div class="text-center mb-4 pt-3">
@@ -259,7 +240,7 @@
             </div>
             <div class="row g-2 mt-5">
                 <div class="col-md-6">
-                    <button class="btn btn-outline-custom w-100 p-3 rounded-4 fw-bold" onclick="showHome()">CANCELAR</button>
+                    <button class="btn btn-outline-info w-100 p-3 rounded-4 fw-bold" onclick="showHome()">CANCELAR</button>
                 </div>
                 <div class="col-md-6">
                     <button class="btn btn-buy w-100 p-3 rounded-4 fw-bold" onclick="showCheckout()">IR AL PAGO <i class="fa-solid fa-credit-card ms-2"></i></button>
@@ -268,10 +249,11 @@
         </div>
     </div>
 
+    <!-- View Checkout -->
     <div id="view-checkout" style="display: none;">
         <div class="receipt-container">
             <div class="text-center mb-4 pt-3">
-                <div class="display-4 text-accent mb-2" style="color: var(--accent-color)"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                <div class="display-4 mb-2" style="color: var(--accent-color)"><i class="fa-solid fa-file-invoice-dollar"></i></div>
                 <h2 class="fw-bold">Detalles de Facturación</h2>
                 <p class="text-secondary">Complete sus datos para finalizar la compra</p>
             </div>
@@ -286,29 +268,15 @@
                     <input type="email" id="cust-email" class="form-control form-control-custom" placeholder="juan@ejemplo.com" required>
                 </div>
                 <div class="mb-4">
-                    <label class="form-label small fw-bold text-secondary">DIRECCIÓN DE ENTREGA / FACTURACIÓN</label>
-                    <textarea id="cust-address" class="form-control form-control-custom" rows="2" placeholder="Calle, Ciudad, Código Postal..." required></textarea>
+                    <label class="form-label small fw-bold text-secondary">DIRECCIÓN</label>
+                    <textarea id="cust-address" class="form-control form-control-custom" rows="2" placeholder="Calle, Ciudad..." required></textarea>
                 </div>
-                
-                <div class="bg-secondary bg-opacity-10 p-4 rounded-4 mb-4">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="small text-secondary fw-bold">MONTO TOTAL</div>
-                            <div class="h3 fw-bold text-info mb-0" id="checkout-final-total"></div>
-                        </div>
-                        <i class="fa-brands fa-cc-visa fs-1 opacity-50"></i>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-buy w-100 p-3 rounded-4 fw-bold">
-                    CONFIRMAR Y FINALIZAR PAGO
-                </button>
+                <button type="submit" class="btn btn-buy w-100 p-3 rounded-4 fw-bold">CONFIRMAR PAGO</button>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Modal y Offcanvas (se mantienen igual) -->
 <div class="modal fade" id="gameModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content bg-dark border-0 rounded-4 text-white">
