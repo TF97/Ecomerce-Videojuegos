@@ -407,6 +407,12 @@
         ];
     });
 
+    // Función global para manejar errores de imagen
+    window.imgError = (img) => {
+        img.onerror = null; // Prevenir bucles infinitos
+        img.src = FALLBACK_IMG;
+    };
+
     // --- LÓGICA DE TIENDA ---
     window.render = () => {
         const grid = document.getElementById('grid-productos');
@@ -416,7 +422,9 @@
             <div class="col">
                 <div class="game-card h-100 d-flex flex-column">
                     <div class="game-img-container">
-                        <img src="${p.imagen || 'https://via.placeholder.com/400x200'}" alt="${p.titulo}">
+                        <img src="${p.imagen || FALLBACK_IMG}" 
+                             onerror="imgError(this)" 
+                             alt="${p.titulo}">
                         <span class="platform-badge text-white">${p.plataforma}</span>
                     </div>
                     <div class="card-body p-4 d-flex flex-column">
@@ -432,7 +440,9 @@
             <tr class="border-bottom border-white border-opacity-5">
                 <td class="ps-4">
                     <div class="d-flex align-items-center">
-                        <img src="${p.imagen}" class="rounded me-3" style="width: 40px; height: 25px; object-fit: cover;">
+                        <img src="${p.imagen || FALLBACK_IMG}" 
+                             onerror="imgError(this)"
+                             class="rounded me-3" style="width: 40px; height: 25px; object-fit: cover;">
                         <span>${p.titulo}</span>
                     </div>
                 </td>
@@ -572,7 +582,7 @@
             titulo: document.getElementById('titulo').value,
             plataforma: document.getElementById('plataforma').value,
             precio: parseFloat(document.getElementById('precio').value),
-            imagen: document.getElementById('imagen').value || 'https://via.placeholder.com/400x200'
+            imagen: document.getElementById('imagen').value || FALLBACK_IMG
         };
         if (id) await updateDoc(doc(db, ...gamesPath, id), data);
         else await addDoc(collection(db, ...gamesPath), data);
