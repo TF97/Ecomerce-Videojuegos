@@ -374,53 +374,42 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
     import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-    /**
-     * LÓGICA DE CONFIGURACIÓN DINÁMICA:
-     * Cuando se ejecuta en Canvas, usa __firebase_config.
-     * Cuando se ejecuta fuera (ej: Netlify), DEBES reemplazar el objeto {} con tus datos.
-     */
-    let firebaseConfig = {};
+    // --- VARIABLES GLOBALES INICIALES ---
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'gamevault-pro';
+    const gamesPath = ['artifacts', appId, 'public', 'data', 'videojuegos'];
     
+    let firebaseConfig;
     try {
-        if (typeof __firebase_config !== 'undefined') {
-            firebaseConfig = JSON.parse(__firebase_config);
-        } else {
-            // REEMPLAZA ESTO PARA PRODUCCIÓN EN NETLIFY
-            firebaseConfig = {
-                apiKey: "AIzaSyCPRM6wmQxaQ_BtznpXiZ7RuqpT88C6ZVE",
-    authDomain: "tienda-gamer-1f0d9.firebaseapp.com",
-    projectId: "tienda-gamer-1f0d9",
-    storageBucket: "tienda-gamer-1f0d9.firebasestorage.app",
-    messagingSenderId: "1079320179416",
-    appId: "1:1079320179416:web:e381974c6a03ef5e11ddad",
-    measurementId: "G-WK00XN3M6W"
-            };
-        }
+        // REEMPLAZA ESTO PARA PRODUCCIÓN EN NETLIFY
+        firebaseConfig = {
+            apiKey: "AIzaSyCPRM6wmQxaQ_BtznpXiZ7RuqpT88C6ZVE",
+            authDomain: "tienda-gamer-1f0d9.firebaseapp.com",
+            projectId: "tienda-gamer-1f0d9",
+            storageBucket: "tienda-gamer-1f0d9.firebasestorage.app",
+            messagingSenderId: "1079320179416",
+            appId: "1:1079320179416:web:e381974c6a03ef5e11ddad",
+            measurementId: "G-WK00XN3M6W"
+        };
     } catch (e) {
         console.warn("Usando configuración manual de respaldo");
     }
 
-    const app = initializeApp(firebaseConfig);
+   const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    
-    // El ID de la app para los paths de Firestore
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'gamevault-pro';
-    const gamesCollectionPath = ['artifacts', appId, 'public', 'data', 'videojuegos'];
-    
+
     let productos = [];
     let cart = [];
     let unsubscribes = [];
-    let currentOrderId = "";
-    let currentView = "home"; 
+    let currentView = "home";
     const modal = new bootstrap.Modal(document.getElementById('gameModal'));
     const offcanvasCart = new bootstrap.Offcanvas(document.getElementById('cartPanel'));
 
-     // --- AUTENTICACIÓN ---
+    // --- AUTENTICACIÓN ---
     const initAuth = async () => {
         try {
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -430,16 +419,6 @@
             }
         } catch (e) {
             console.error("Auth Error:", e);
-            if (e.code === 'auth/admin-restricted-operation') {
-                document.getElementById('loader').innerHTML = `
-                    <div class="text-center p-4">
-                        <i class="fa-solid fa-triangle-exclamation text-warning display-4 mb-3"></i>
-                        <h4 class="text-white">Acceso Restringido</h4>
-                        <p class="text-secondary">Debes habilitar "Anonymous Sign-in" en la consola de Firebase.</p>
-                        <button class="btn btn-outline-info mt-3" onclick="location.reload()">Reintentar</button>
-                    </div>
-                `;
-            }
         }
     };
 
