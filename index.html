@@ -513,7 +513,7 @@
             document.getElementById('cart-total-amount').innerText = `$${total}`;
             container.innerHTML = cart.map((item, i) => {
                 // USAR getVal AQUÍ TAMBIÉN PARA EL CARRITO
-                const titulo = getVal(item, ['titulo', 'title', 'nombre', 'name'], "Juego");
+                const tituloVal = getVal(item, ['titulo', 'title', 'nombre', 'name'], "Juego");
                 const precio = item.precio || 0;
                 const imgUrlRaw = getVal(item, ['imagen', 'image', 'url', 'cover'], "");
                 const imgUrl = (imgUrlRaw && imgUrlRaw.trim() !== "") ? imgUrlRaw : FALLBACK_IMG;
@@ -521,10 +521,10 @@
                 return `
                 <div class="mb-3 bg-white bg-opacity-5 p-3 rounded-4">
                     <div class="d-flex align-items-center mb-2">
-                        <img src="${imgUrl}" onerror="imgError(this)" class="rounded me-3" style="width: 50px; height: 30px; object-fit: cover;">
-                        <div class="flex-grow-1 overflow-hidden">
-                            <div class="d-flex justify-content-between">
-                                <span class="small fw-bold text-truncate me-2">${titulo}</span>
+                        <img src="${imgUrl}" onerror="imgError(this)" class="rounded me-3" style="width: 50px; height: 30px; object-fit: cover; flex-shrink: 0;">
+                        <div class="flex-grow-1 overflow-hidden" style="min-width: 0;">
+                            <div class="d-flex flex-column">
+                                <span class="small fw-bold text-white text-truncate d-block" title="${tituloVal}">${tituloVal}</span>
                                 <span class="text-info small fw-bold">$${(precio * item.cantidad).toFixed(2)}</span>
                             </div>
                         </div>
@@ -532,10 +532,12 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="qty-controls">
                             <button class="qty-btn" onclick="updateQty(${i}, -1)">-</button>
-                            <span class="px-2 small">${item.cantidad}</span>
+                            <span class="px-2 small text-white">${item.cantidad}</span>
                             <button class="qty-btn" onclick="updateQty(${i}, 1)">+</button>
                         </div>
-                        <button class="btn btn-link text-danger p-0 small" onclick="updateQty(${i}, -${item.cantidad})">Eliminar</button>
+                        <button class="btn btn-link text-danger p-0 small text-decoration-none" onclick="updateQty(${i}, -${item.cantidad})">
+                           <i class="fa-solid fa-trash-can me-1"></i>Eliminar
+                        </button>
                     </div>
                 </div>
             `}).join('');
@@ -563,7 +565,7 @@
         document.getElementById('receipt-items-list').innerHTML = cart.map(item => {
             const titulo = getVal(item, ['titulo', 'title', 'nombre', 'name'], "Juego");
             const precio = item.precio || 0;
-            return `<tr><td>${titulo}</td><td class="text-center">x${item.cantidad}</td><td class="text-end">$${(precio * item.cantidad).toFixed(2)}</td></tr>`
+            return `<tr><td class="text-white">${titulo}</td><td class="text-center text-secondary">x${item.cantidad}</td><td class="text-end text-info fw-bold">$${(precio * item.cantidad).toFixed(2)}</td></tr>`
         }).join('');
         
         document.getElementById('view-normal').style.display = 'none';
