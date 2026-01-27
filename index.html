@@ -3,189 +3,377 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GameVault | Versión Ultra Rápida</title>
+    <title>GameVault Pro | Elite Gaming Store</title>
+    <!-- Bootstrap 5.3 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     
     <style>
         :root {
-            --primary-neon: #00f2fe;
-            --secondary-neon: #4facfe;
-            --dark-bg: #050a1f; 
-            --card-bg: #0a1435;
-            --text-main: #e0e0e0;
+            --accent-color: #00d2ff;
+            --accent-gradient: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+            --dark-bg: #0b0f19;
+            --card-bg: #161c2d;
+            --glass-bg: rgba(22, 28, 45, 0.7);
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --danger: #ff4d4d;
+            --warning: #ffb86c;
+            --success: #00f2fe;
         }
 
         body {
             background-color: var(--dark-bg);
-            background-image: radial-gradient(circle at top right, #081c4d 0%, var(--dark-bg) 70%);
-            color: var(--text-main);
-            font-family: 'Roboto', sans-serif;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 210, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(58, 123, 213, 0.05) 0%, transparent 40%);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
             min-height: 100vh;
-            overflow-x: hidden;
         }
 
+        h1, h2, h3, h4, .navbar-brand { font-family: 'Space Grotesk', sans-serif; }
+
+        /* --- Navbar --- */
         .navbar {
-            background: rgba(8, 16, 43, 0.95);
-            backdrop-filter: blur(15px);
-            border-bottom: 2px solid var(--primary-neon);
-            padding: 0.8rem 0;
-            z-index: 1000;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1rem 0;
+            z-index: 1050;
         }
 
         .navbar-brand {
-            font-family: 'Orbitron', sans-serif;
-            color: var(--primary-neon) !important;
-            font-weight: bold;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-btn-circle {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-btn-circle:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+        }
+
+        .nav-btn-circle.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
         }
 
         .profile-switch {
-            background: #1a2a5a;
-            border-radius: 50px;
-            padding: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 4px;
             display: flex;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .profile-btn {
-            border: none; background: transparent; color: white;
-            padding: 5px 20px; border-radius: 50px; font-size: 0.85rem;
-            transition: all 0.3s; cursor: pointer;
+            border: none; background: transparent; color: var(--text-secondary);
+            padding: 6px 16px; border-radius: 8px; font-size: 0.9rem;
+            font-weight: 600; transition: all 0.25s ease;
         }
 
         .profile-btn.active {
-            background: var(--primary-neon); color: #050a1f;
-            font-weight: bold; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+            background: var(--accent-gradient); color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
         }
 
-        #admin-panel {
-            background: rgba(10, 20, 53, 0.8);
-            border: 1px solid rgba(0, 242, 254, 0.2);
-            border-radius: 15px; padding: 20px; margin-bottom: 40px;
-            display: none;
+        .cart-trigger {
+            background: transparent; border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff !important; width: 45px; height: 45px;
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; transition: all 0.3s; cursor: pointer;
         }
 
         .game-card {
-            background: var(--card-bg);
-            border: 1px solid rgba(0, 242, 254, 0.1);
-            border-radius: 20px; overflow: hidden;
-            transition: transform 0.3s ease;
-            height: 100%;
+            background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px; overflow: hidden; transition: all 0.3s ease;
         }
 
-        .game-card:hover { transform: translateY(-5px); border-color: var(--primary-neon); }
-
-        .game-img-container { height: 160px; overflow: hidden; background: #1a1a1a; }
+        .game-img-container { height: 180px; position: relative; }
         .game-img-container img { width: 100%; height: 100%; object-fit: cover; }
 
-        .btn-neon {
-            background: linear-gradient(45deg, var(--primary-neon), var(--secondary-neon));
-            color: #050a1f; font-weight: bold; border: none; border-radius: 50px;
-            padding: 8px 20px;
+        .platform-badge {
+            position: absolute; top: 12px; right: 12px;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+            padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 700;
+        }
+
+        .btn-buy { background: var(--accent-gradient); color: white; border: none; }
+        .btn-outline-custom {
+            border: 1px solid var(--accent-color); color: var(--accent-color);
+            background: transparent; transition: all 0.3s;
+        }
+        .btn-outline-custom:hover { background: var(--accent-color); color: white; }
+
+        .receipt-container {
+            background: var(--card-bg); border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 650px; margin: 40px auto; padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        .qty-controls {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(255,255,255,0.05); border-radius: 8px; padding: 2px 8px;
+        }
+        .qty-btn {
+            background: none; border: none; color: var(--accent-color);
+            font-weight: bold; padding: 0 5px; cursor: pointer;
+        }
+
+        /* Forms */
+        .form-control-custom {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: white !important; padding: 12px 15px; border-radius: 12px;
+        }
+        .form-control-custom:focus {
+            background: rgba(255,255,255,0.08); border-color: var(--accent-color);
+            box-shadow: none;
         }
 
         #loader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--dark-bg); z-index: 2000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 0.5s ease, visibility 0.5s;
+            position: fixed; inset: 0; background: var(--dark-bg); z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
-
-        .skeleton {
-            background: linear-gradient(90deg, #0a1435 25%, #1a2a5a 50%, #0a1435 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
+        .loader-circle {
+            width: 50px; height: 50px; border: 3px solid rgba(0, 210, 255, 0.1);
+            border-top-color: var(--accent-color); border-radius: 50%;
+            animation: spin 1s infinite linear;
         }
-
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
 <div id="loader">
-    <div class="spinner-border text-info mb-3" role="status"></div>
-    <div class="font-orbitron text-info" id="loader-text">INICIANDO SISTEMA...</div>
-    <button class="btn btn-sm btn-link text-muted mt-4" id="skip-loader" style="display:none;" onclick="hideLoader()">Saltar espera</button>
+    <div class="loader-circle mb-4"></div>
+    <div class="h5 fw-light">SISTEMA GAMEVAULT LISTO...</div>
 </div>
 
+<!-- Navbar Principal con Navegación Global -->
 <nav class="navbar navbar-dark sticky-top">
     <div class="container">
-        <a class="navbar-brand" href="#"><i class="fas fa-bolt me-2"></i>GAMEVAULT</a>
-        <div class="d-flex align-items-center gap-3">
-            <div class="profile-switch">
+        <div class="nav-controls me-3">
+            <div id="global-back-btn" class="nav-btn-circle disabled" onclick="handleGlobalBack()" title="Volver">
+                <i class="fa-solid fa-arrow-left"></i>
+            </div>
+            <div id="global-home-btn" class="nav-btn-circle" onclick="showHome()" title="Inicio">
+                <i class="fa-solid fa-house"></i>
+            </div>
+        </div>
+
+        <a class="navbar-brand d-none d-md-flex align-items-center" onclick="showHome()">
+            <i class="fa-solid fa-bolt me-2 fs-4"></i> GAMEVAULT
+        </a>
+
+        <div class="d-flex align-items-center gap-3 ms-auto">
+            <div id="profile-switcher-container" class="profile-switch">
                 <button id="btn-user" class="profile-btn active" onclick="setProfile('user')">Tienda</button>
                 <button id="btn-admin" class="profile-btn" onclick="setProfile('admin')">Gestión</button>
             </div>
-            <button class="btn btn-outline-info position-relative rounded-circle" data-bs-toggle="offcanvas" data-bs-target="#cartPanel" style="width: 42px; height: 42px;">
-                <i class="fas fa-shopping-cart"></i>
-                <span id="cart-counter" class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle" style="font-size: 0.6rem;">0</span>
+            <button id="cart-btn-main" class="cart-trigger position-relative" data-bs-toggle="offcanvas" data-bs-target="#cartPanel">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span id="cart-counter" class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">0</span>
             </button>
         </div>
     </div>
 </nav>
 
-<div class="container mt-5">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2 id="view-title" class="display-6 fw-bold font-orbitron text-info mb-1">CATÁLOGO</h2>
-            <p id="view-desc" class="text-muted">Acceso instantáneo a tus juegos favoritos.</p>
+<div id="main-content" class="container mt-5">
+    <!-- Vista Catálogo / Gestión -->
+    <div id="view-normal">
+        <div class="row align-items-end mb-5">
+            <div class="col">
+                <h2 id="view-title" class="fw-bold mb-1">Catálogo de Juegos</h2>
+                <p id="view-desc" class="text-secondary mb-0">Títulos exclusivos para la comunidad Pro.</p>
+            </div>
+            <div id="admin-actions" class="col-auto d-none">
+                <button class="btn btn-buy p-2 px-4 rounded-3" onclick="abrirModalCrear()">
+                    <i class="fa-solid fa-plus me-2"></i>Nuevo Juego
+                </button>
+            </div>
+        </div>
+        <div id="admin-panel" style="display: none;">
+            <div class="custom-table table-responsive">
+                <table class="table table-dark table-hover align-middle mb-0">
+                    <thead>
+                        <tr><th class="ps-4">Juego</th><th>Plataforma</th><th>Precio</th><th class="text-end pe-4">Acciones</th></tr>
+                    </thead>
+                    <tbody id="admin-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+        <div id="grid-productos" class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4 pb-5"></div>
+    </div>
+
+    <!-- Vista Resumen de Compra -->
+    <div id="view-receipt" style="display: none;">
+        <div class="receipt-container">
+            <div class="text-center mb-4 pt-3">
+                <div class="display-4 text-info mb-2"><i class="fa-solid fa-receipt"></i></div>
+                <h2 class="fw-bold">Resumen de Orden</h2>
+                <div class="badge bg-dark text-info p-2 px-3 mt-2">ID: <span id="receipt-order-id"></span></div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-dark table-borderless small align-middle">
+                    <thead>
+                        <tr class="text-secondary border-bottom border-white border-opacity-10">
+                            <th>Producto</th><th class="text-center">Cant.</th><th class="text-end">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="receipt-items-list"></tbody>
+                </table>
+            </div>
+            <div class="border-top border-white border-opacity-10 pt-3 mt-3">
+                <div class="d-flex justify-content-between h4 fw-bold">
+                    <span>Total a Pagar:</span>
+                    <span class="text-info" id="receipt-total"></span>
+                </div>
+            </div>
+            <div class="row g-2 mt-5">
+                <div class="col-md-6">
+                    <button class="btn btn-outline-custom w-100 p-3 rounded-4 fw-bold" onclick="showHome()">CANCELAR</button>
+                </div>
+                <div class="col-md-6">
+                    <button class="btn btn-buy w-100 p-3 rounded-4 fw-bold" onclick="showCheckout()">IR AL PAGO <i class="fa-solid fa-credit-card ms-2"></i></button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div id="admin-panel">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="font-orbitron text-white mb-0">Gestión de Inventario</h4>
-            <button class="btn btn-neon" onclick="abrirModalCrear()"><i class="fas fa-plus me-2"></i>NUEVO</button>
-        </div>
-        <div class="table-responsive">
-            <table class="table table-dark table-hover align-middle">
-                <thead><tr><th>PRODUCTO</th><th>PLATAFORMA</th><th>PRECIO</th><th class="text-end">ACCIONES</th></tr></thead>
-                <tbody id="admin-table-body"></tbody>
-            </table>
-        </div>
-    </div>
+    <!-- Vista Formulario de Pago / Factura Final -->
+    <div id="view-checkout" style="display: none;">
+        <div class="receipt-container">
+            <div class="text-center mb-4 pt-3">
+                <div class="display-4 text-accent mb-2" style="color: var(--accent-color)"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                <h2 class="fw-bold">Detalles de Facturación</h2>
+                <p class="text-secondary">Complete sus datos para finalizar la compra</p>
+            </div>
 
-    <div id="grid-productos" class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4 pb-5">
-        <!-- Esqueletos de carga inicial -->
-        <div class="col"><div class="card game-card skeleton" style="min-height: 250px;"></div></div>
-        <div class="col"><div class="card game-card skeleton" style="min-height: 250px;"></div></div>
-        <div class="col"><div class="card game-card skeleton" style="min-height: 250px;"></div></div>
-        <div class="col"><div class="card game-card skeleton" style="min-height: 250px;"></div></div>
+            <form id="checkoutForm">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-secondary">NOMBRE COMPLETO</label>
+                    <input type="text" id="cust-name" class="form-control form-control-custom" placeholder="Ej: Juan Pérez" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-secondary">CORREO ELECTRÓNICO</label>
+                    <input type="email" id="cust-email" class="form-control form-control-custom" placeholder="juan@ejemplo.com" required>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary">DIRECCIÓN DE ENTREGA / FACTURACIÓN</label>
+                    <textarea id="cust-address" class="form-control form-control-custom" rows="2" placeholder="Calle, Ciudad, Código Postal..." required></textarea>
+                </div>
+                
+                <div class="bg-secondary bg-opacity-10 p-4 rounded-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="small text-secondary fw-bold">MONTO TOTAL</div>
+                            <div class="h3 fw-bold text-info mb-0" id="checkout-final-total"></div>
+                        </div>
+                        <i class="fa-brands fa-cc-visa fs-1 opacity-50"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-buy w-100 p-3 rounded-4 fw-bold">
+                    CONFIRMAR Y FINALIZAR PAGO
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 
 <!-- Modal CRUD -->
-<div class="modal fade" id="gameModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="gameModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark border-info text-white">
-            <div class="modal-header border-0"><h5 class="modal-title font-orbitron" id="modalTitle">JUEGO</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
-            <div class="modal-body">
+        <div class="modal-content bg-dark border-0 rounded-4 text-white">
+            <div class="modal-header border-0 p-4 pb-0">
+                <h5 class="modal-title fw-bold" id="modalTitle">Configurar Juego</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
                 <form id="gameForm">
                     <input type="hidden" id="game-id">
-                    <div class="mb-3"><label class="form-label">Título</label><input type="text" id="titulo" class="form-control bg-secondary text-white border-0" required></div>
-                    <div class="mb-3"><label class="form-label">Plataforma</label>
-                        <select id="plataforma" class="form-select bg-secondary text-white border-0">
-                            <option value="PC">PC</option><option value="PS5">PS5</option><option value="XBOX">XBOX</option><option value="SWITCH">SWITCH</option>
-                        </select>
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-bold">TÍTULO</label>
+                        <input type="text" id="titulo" class="form-control form-control-custom" required>
                     </div>
-                    <div class="row">
-                        <div class="col-6"><label class="form-label">Precio</label><input type="number" id="precio" class="form-control bg-secondary text-white border-0" step="0.01" required></div>
-                        <div class="col-6"><label class="form-label">Imagen URL</label><input type="text" id="imagen" class="form-control bg-secondary text-white border-0"></div>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label class="form-label text-secondary small fw-bold">PLATAFORMA</label>
+                            <select id="plataforma" class="form-select form-control-custom">
+                                <option value="PC">PC</option><option value="PS5">PlayStation 5</option>
+                                <option value="XBOX">Xbox Series X</option><option value="SWITCH">Switch</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-secondary small fw-bold">PRECIO ($)</label>
+                            <input type="number" id="precio" class="form-control form-control-custom" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-bold">URL DE PORTADA</label>
+                        <input type="text" id="imagen" class="form-control form-control-custom">
                     </div>
                 </form>
             </div>
-            <div class="modal-footer border-0"><button type="button" class="btn btn-neon w-100" onclick="procesarFormulario()">GUARDAR</button></div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-buy w-100 p-3 rounded-3" onclick="procesarFormulario()">Guardar Cambios</button>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Offcanvas Carrito -->
-<div class="offcanvas offcanvas-end bg-dark text-white" tabindex="-1" id="cartPanel">
-    <div class="offcanvas-header border-bottom border-info"><h5 class="font-orbitron text-info">CARRITO</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button></div>
-    <div class="offcanvas-body"><div id="cart-items-container"></div></div>
+<!-- Carrito Lateral -->
+<div class="offcanvas offcanvas-end bg-dark border-start border-white border-opacity-10 text-white" tabindex="-1" id="cartPanel">
+    <div class="offcanvas-header p-4 border-bottom border-white border-opacity-10">
+        <h5 class="fw-bold mb-0">Carrito <i class="fa-solid fa-cart-shopping ms-2 text-info"></i></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body p-4 d-flex flex-column">
+        <div id="cart-items-container" class="flex-grow-1 overflow-auto"></div>
+        <div id="cart-footer" class="pt-4 border-top border-white border-opacity-10 d-none">
+            <div class="d-flex justify-content-between h5 mb-4">
+                <span>Total:</span>
+                <span id="cart-total-amount" class="text-info fw-bold"></span>
+            </div>
+            <button class="btn btn-buy w-100 p-3 rounded-4 fw-bold" onclick="finalizarCompra()">VER RESUMEN</button>
+        </div>
+        <div id="cart-empty-msg" class="text-center text-secondary py-5">
+            <i class="fa-solid fa-ghost display-4 mb-3 opacity-25"></i>
+            <p>Tu carrito está vacío</p>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -194,103 +382,64 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
-    import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
     const firebaseConfig = JSON.parse(__firebase_config);
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'gamevault-pro';
-    const gamesCollection = collection(db, 'artifacts', appId, 'public', 'data', 'videojuegos');
-
+    const gamesCollectionPath = ['artifacts', appId, 'public', 'data', 'videojuegos'];
+    
     let productos = [];
     let cart = [];
-    let isLoaded = false;
+    let unsubscribes = [];
+    let currentOrderId = "";
+    let currentView = "home"; // home, receipt, checkout
     const modal = new bootstrap.Modal(document.getElementById('gameModal'));
+    const offcanvasCart = new bootstrap.Offcanvas(document.getElementById('cartPanel'));
 
-    // --- FUNCIÓN PARA OCULTAR LOADER ---
-    window.hideLoader = () => {
-        const loader = document.getElementById('loader');
-        if (loader) {
-            loader.style.opacity = '0';
-            setTimeout(() => {
-                loader.style.display = 'none';
-                loader.style.visibility = 'hidden';
-            }, 500);
-        }
-    };
-
-    // Fail-safe: Si después de 4 segundos no cargó, permitir entrar de todos modos
-    setTimeout(() => {
-        if (!isLoaded) {
-            document.getElementById('skip-loader').style.display = 'block';
-            document.getElementById('loader-text').innerText = "CONEXIÓN LENTA DETECTADA...";
-        }
-    }, 4000);
-
-    // --- OPTIMIZACIÓN: PERSISTENCIA NO BLOQUEANTE ---
-    enableIndexedDbPersistence(db).catch((err) => {
-        console.warn("Persistence error:", err.code);
-    });
-
-    // --- INICIO DE APP ---
-    const startApp = async () => {
+    const initAuth = async () => {
         try {
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                 await signInWithCustomToken(auth, __initial_auth_token);
             } else {
                 await signInAnonymously(auth);
             }
-        } catch (e) { 
-            console.error("Auth error", e);
-            hideLoader(); // Mostrar app aunque falle auth para diagnosticar
-        }
+        } catch (error) { console.error("Auth failed:", error); }
     };
 
     onAuthStateChanged(auth, (user) => {
+        unsubscribes.forEach(unsub => unsub());
+        unsubscribes = [];
         if (user) {
-            document.getElementById('loader-text').innerText = "SINCRO NUBE...";
-            suscribirAData();
+            const q = collection(db, ...gamesCollectionPath);
+            const unsub = onSnapshot(q, (snap) => {
+                productos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                document.getElementById('loader').style.display = 'none';
+                render();
+            });
+            unsubscribes.push(unsub);
         }
     });
-
-    function suscribirAData() {
-        onSnapshot(gamesCollection, (snap) => {
-            productos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            isLoaded = true;
-            hideLoader();
-            render();
-        }, (error) => {
-            console.error("Snapshot error:", error);
-            hideLoader();
-        });
-    }
 
     window.render = function() {
         const grid = document.getElementById('grid-productos');
         const adminTable = document.getElementById('admin-table-body');
-        
         if (!grid || !adminTable) return;
-
-        if (productos.length === 0 && isLoaded) {
-            grid.innerHTML = '<div class="col-12 text-center py-5">No hay juegos. El administrador debe agregar uno.</div>';
-            adminTable.innerHTML = '';
-            return;
-        }
 
         grid.innerHTML = productos.map(p => `
             <div class="col">
-                <div class="card game-card">
+                <div class="game-card h-100 d-flex flex-column">
                     <div class="game-img-container">
-                        <img src="${p.imagen || 'https://via.placeholder.com/400x200?text=SIN+IMAGEN'}" alt="${p.titulo}" loading="lazy">
+                        <img src="${p.imagen || 'https://via.placeholder.com/400x200?text=GAME'}" alt="${p.titulo}">
+                        <span class="platform-badge text-white">${p.plataforma}</span>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body p-4 d-flex flex-column">
                         <h6 class="fw-bold text-white mb-1 text-truncate">${p.titulo}</h6>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="badge bg-info text-dark">${p.plataforma}</span>
-                            <span class="text-info fw-bold">$${p.precio}</span>
-                        </div>
-                        <button onclick="addToCart('${p.id}')" class="btn btn-outline-info btn-sm w-100">Comprar</button>
+                        <span class="text-info fw-bold mb-3">$${p.precio}</span>
+                        <button onclick="addToCart('${p.id}')" class="btn btn-buy w-100 mt-auto">Añadir al Carrito</button>
                     </div>
                 </div>
             </div>
@@ -298,41 +447,191 @@
 
         adminTable.innerHTML = productos.map(p => `
             <tr>
-                <td>${p.titulo}</td>
-                <td>${p.plataforma}</td>
-                <td class="text-info">$${p.precio}</td>
-                <td class="text-end">
-                    <button onclick="abrirModalEditar('${p.id}')" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></button>
-                    <button onclick="eliminarProducto('${p.id}')" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                <td class="ps-4">
+                    <div class="d-flex align-items-center">
+                        <img src="${p.imagen}" class="rounded me-3" style="width: 40px; height: 25px; object-fit: cover;">
+                        <span class="fw-semibold">${p.titulo}</span>
+                    </div>
+                </td>
+                <td><span class="badge bg-secondary">${p.plataforma}</span></td>
+                <td class="text-info fw-bold">$${p.precio}</td>
+                <td class="text-end pe-4">
+                    <button onclick="abrirModalEditar('${p.id}')" class="btn btn-sm btn-link text-warning p-1"><i class="fa-solid fa-pen"></i></button>
+                    <button onclick="eliminarProducto('${p.id}')" class="btn btn-sm btn-link text-danger p-1"><i class="fa-solid fa-trash"></i></button>
                 </td>
             </tr>
         `).join('');
     };
 
+    // --- Carrito ---
+    window.addToCart = (id) => {
+        const prod = productos.find(p => p.id === id);
+        if(!prod) return;
+        const existing = cart.find(item => item.id === id);
+        if(existing) existing.cantidad++;
+        else cart.push({...prod, cantidad: 1});
+        updateCartUI();
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Añadido', showConfirmButton: false, timer: 1000, background: '#161c2d', color: '#fff' });
+    };
+
+    window.updateQty = (index, delta) => {
+        cart[index].cantidad += delta;
+        if(cart[index].cantidad <= 0) cart.splice(index, 1);
+        updateCartUI();
+    };
+
+    function updateCartUI() {
+        const totalItems = cart.reduce((acc, item) => acc + item.cantidad, 0);
+        document.getElementById('cart-counter').innerText = totalItems;
+        const container = document.getElementById('cart-items-container');
+        const footer = document.getElementById('cart-footer');
+        const emptyMsg = document.getElementById('cart-empty-msg');
+        
+        if (cart.length > 0) {
+            footer.classList.remove('d-none'); emptyMsg.classList.add('d-none');
+            const total = cart.reduce((acc, item) => acc + (item.precio * item.cantidad), 0).toFixed(2);
+            document.getElementById('cart-total-amount').innerText = `$${total}`;
+            container.innerHTML = cart.map((item, index) => `
+                <div class="mb-3 bg-secondary bg-opacity-10 p-3 rounded-4">
+                    <div class="d-flex align-items-center mb-2">
+                        <img src="${item.imagen}" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="small fw-bold text-truncate">${item.titulo}</div>
+                            <div class="small text-info">$${item.precio} c/u</div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <div class="qty-controls">
+                            <button class="qty-btn" onclick="updateQty(${index}, -1)">-</button>
+                            <span class="small fw-bold">${item.cantidad}</span>
+                            <button class="qty-btn" onclick="updateQty(${index}, 1)">+</button>
+                        </div>
+                        <div class="fw-bold text-white small">$${(item.precio * item.cantidad).toFixed(2)}</div>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            footer.classList.add('d-none'); emptyMsg.classList.remove('d-none'); container.innerHTML = '';
+        }
+    }
+
+    // --- Navegación Global ---
+    window.handleGlobalBack = () => {
+        if (currentView === "receipt") {
+            showHome();
+        } else if (currentView === "checkout") {
+            backToReceipt();
+        }
+    };
+
+    function updateNavUI() {
+        const backBtn = document.getElementById('global-back-btn');
+        if (currentView === "home") {
+            backBtn.classList.add('disabled');
+        } else {
+            backBtn.classList.remove('disabled');
+        }
+    }
+
+    // --- Flujo de Compra ---
+    window.finalizarCompra = () => {
+        if (!cart.length) return;
+        offcanvasCart.hide();
+        currentOrderId = Math.random().toString(36).substr(2, 9).toUpperCase();
+        currentView = "receipt";
+        generarRecibo();
+        updateNavUI();
+    };
+
+    function generarRecibo() {
+        const total = cart.reduce((acc, item) => acc + (item.precio * item.cantidad), 0).toFixed(2);
+        document.getElementById('receipt-order-id').innerText = currentOrderId;
+        document.getElementById('receipt-total').innerText = `$${total}`;
+        document.getElementById('receipt-items-list').innerHTML = cart.map(item => `
+            <tr class="border-bottom border-white border-opacity-5">
+                <td class="py-3"><div class="fw-bold">${item.titulo}</div><div class="x-small text-secondary">${item.plataforma}</div></td>
+                <td class="text-center py-3">x${item.cantidad}</td>
+                <td class="text-end py-3 fw-bold text-info">$${(item.precio * item.cantidad).toFixed(2)}</td>
+            </tr>
+        `).join('');
+        
+        hideAllViews();
+        document.getElementById('view-receipt').style.display = 'block';
+    }
+
+    window.showCheckout = () => {
+        const total = cart.reduce((acc, item) => acc + (item.precio * item.cantidad), 0).toFixed(2);
+        document.getElementById('checkout-final-total').innerText = `$${total}`;
+        currentView = "checkout";
+        hideAllViews();
+        document.getElementById('view-checkout').style.display = 'block';
+        updateNavUI();
+    };
+
+    window.backToReceipt = () => {
+        currentView = "receipt";
+        hideAllViews();
+        document.getElementById('view-receipt').style.display = 'block';
+        updateNavUI();
+    };
+
+    function hideAllViews() {
+        document.getElementById('view-normal').style.display = 'none';
+        document.getElementById('view-receipt').style.display = 'none';
+        document.getElementById('view-checkout').style.display = 'none';
+        document.getElementById('profile-switcher-container').style.display = 'none';
+        document.getElementById('cart-btn-main').style.display = 'none';
+    }
+
+    window.showHome = () => {
+        if (currentView !== "home") {
+            cart = []; 
+            updateCartUI();
+        }
+        currentView = "home";
+        document.getElementById('view-normal').style.display = 'block';
+        document.getElementById('view-receipt').style.display = 'none';
+        document.getElementById('view-checkout').style.display = 'none';
+        document.getElementById('profile-switcher-container').style.display = 'flex';
+        document.getElementById('cart-btn-main').style.display = 'flex';
+        setProfile('user');
+        updateNavUI();
+    };
+
+    // --- Manejo del Formulario de Pago ---
+    document.getElementById('checkoutForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('cust-name').value;
+        Swal.fire({
+            title: '¡Pago Confirmado!',
+            text: `Gracias ${name}. Tu pedido #${currentOrderId} ha sido procesado exitosamente. Recibirás tu factura por email.`,
+            icon: 'success',
+            background: '#161c2d', color: '#fff',
+            confirmButtonColor: '#00d2ff'
+        }).then(() => showHome());
+    });
+
+    // --- Admin ---
     window.setProfile = (type) => {
         const isAdmin = type === 'admin';
         document.getElementById('btn-user').classList.toggle('active', !isAdmin);
         document.getElementById('btn-admin').classList.toggle('active', isAdmin);
         document.getElementById('admin-panel').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('admin-actions').classList.toggle('d-none', !isAdmin);
         document.getElementById('grid-productos').style.display = isAdmin ? 'none' : 'flex';
-        document.getElementById('view-title').innerText = isAdmin ? 'GESTIÓN' : 'CATÁLOGO';
-        render();
+        document.getElementById('view-title').innerText = isAdmin ? 'Gestión de Stock' : 'Catálogo de Juegos';
     };
 
     window.abrirModalCrear = () => {
-        document.getElementById('gameForm').reset();
-        document.getElementById('game-id').value = '';
-        modal.show();
+        document.getElementById('gameForm').reset(); document.getElementById('game-id').value = '';
+        document.getElementById('modalTitle').innerText = 'Registrar Juego'; modal.show();
     };
 
     window.abrirModalEditar = (id) => {
-        const p = productos.find(x => x.id === id);
-        if(!p) return;
-        document.getElementById('game-id').value = p.id;
-        document.getElementById('titulo').value = p.titulo;
-        document.getElementById('plataforma').value = p.plataforma;
-        document.getElementById('precio').value = p.precio;
-        document.getElementById('imagen').value = p.imagen;
+        const p = productos.find(x => x.id === id); if(!p) return;
+        document.getElementById('game-id').value = p.id; document.getElementById('titulo').value = p.titulo;
+        document.getElementById('plataforma').value = p.plataforma; document.getElementById('precio').value = p.precio;
+        document.getElementById('imagen').value = p.imagen; document.getElementById('modalTitle').innerText = 'Modificar Título';
         modal.show();
     };
 
@@ -342,32 +641,21 @@
             titulo: document.getElementById('titulo').value,
             plataforma: document.getElementById('plataforma').value,
             precio: parseFloat(document.getElementById('precio').value) || 0,
-            imagen: document.getElementById('imagen').value || ''
+            imagen: document.getElementById('imagen').value || 'https://via.placeholder.com/400x200?text=GAME'
         };
         try {
-            if (id) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'videojuegos', id), datos);
-            else await addDoc(gamesCollection, datos);
+            if (id) await updateDoc(doc(db, ...gamesCollectionPath, id), datos);
+            else await addDoc(collection(db, ...gamesCollectionPath), datos);
             modal.hide();
-        } catch (e) { 
-            console.error(e);
-            Swal.fire('Error', 'No se pudo guardar en la nube', 'error');
-        }
+        } catch (e) { Swal.fire('Error', 'Acceso denegado', 'error'); }
     };
 
     window.eliminarProducto = async (id) => {
-        if (confirm("¿Borrar juego permanentemente?")) {
-            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'videojuegos', id));
-        }
+        const res = await Swal.fire({ title: '¿Eliminar?', icon: 'warning', showCancelButton: true, background: '#161c2d', color: '#fff' });
+        if (res.isConfirmed) await deleteDoc(doc(db, ...gamesCollectionPath, id));
     };
 
-    window.addToCart = (id) => {
-        const item = productos.find(p => p.id === id);
-        cart.push(item);
-        document.getElementById('cart-counter').innerText = cart.length;
-        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Añadido', showConfirmButton: false, timer: 1000, background: '#0a1435', color: '#fff' });
-    };
-
-    startApp();
+    initAuth();
 </script>
 </body>
 </html>
