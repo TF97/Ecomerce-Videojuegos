@@ -420,7 +420,7 @@
     const modal = new bootstrap.Modal(document.getElementById('gameModal'));
     const offcanvasCart = new bootstrap.Offcanvas(document.getElementById('cartPanel'));
 
-    // Inicialización de Auth corregida para el entorno de Canvas
+     // --- AUTENTICACIÓN ---
     const initAuth = async () => {
         try {
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -429,249 +429,211 @@
                 await signInAnonymously(auth);
             }
         } catch (e) {
-            console.error("Error crítico de autenticación:", e);
+            console.error("Auth Error:", e);
+            if (e.code === 'auth/admin-restricted-operation') {
+                document.getElementById('loader').innerHTML = `
+                    <div class="text-center p-4">
+                        <i class="fa-solid fa-triangle-exclamation text-warning display-4 mb-3"></i>
+                        <h4 class="text-white">Acceso Restringido</h4>
+                        <p class="text-secondary">Debes habilitar "Anonymous Sign-in" en la consola de Firebase.</p>
+                        <button class="btn btn-outline-info mt-3" onclick="location.reload()">Reintentar</button>
+                    </div>
+                `;
+            }
         }
     };
 
     onAuthStateChanged(auth, (user) => {
-        if (!user) {
-            initAuth();
-            return;
-        }
+        if (!user) { initAuth(); return; }
         
-        unsubscribes.forEach(unsub => unsub());
-        unsubscribes = [];
-        
-        const q = collection(db, ...gamesCollectionPath);
-        const unsub = onSnapshot(q, (snap) => {
-            productos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            document.getElementById('loader').style.display = 'none';
-            render();
-        }, (error) => {
-            console.error("Error en Firestore:", error);
-            document.getElementById('loader').style.display = 'none';
-        });
-        unsubscribes.push(unsub);
+        unsubscribes.forEach(u => u());
+        unsubscribes = [
+            onSnapshot(collection(db, ...gamesPath), (snap) => {
+                productos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                document.getElementById('loader').style.display = 'none';
+                render();
+            }, (err) => {
+                console.error("Firestore Error:", err);
+                document.getElementById('loader').style.display = 'none';
+            })
+        ];
     });
 
-    // --- EL RESTO DE LAS FUNCIONES DE LA APP ---
-    window.render = function() {
+    // --- LÓGICA DE TIENDA ---
+    window.render = () => {
         const grid = document.getElementById('grid-productos');
-        const adminTable = document.getElementById('admin-table-body');
-        if (!grid || !adminTable) return;
-
+        const adminBody = document.getElementById('admin-table-body');
+        
         grid.innerHTML = productos.map(p => `
             <div class="col">
                 <div class="game-card h-100 d-flex flex-column">
                     <div class="game-img-container">
-                        <img src="${p.imagen || 'https://via.placeholder.com/400x200?text=GAME'}" alt="${p.titulo}">
+                        <img src="${p.imagen || 'https://via.placeholder.com/400x200'}" alt="${p.titulo}">
                         <span class="platform-badge text-white">${p.plataforma}</span>
                     </div>
                     <div class="card-body p-4 d-flex flex-column">
                         <h6 class="fw-bold text-white mb-1 text-truncate">${p.titulo}</h6>
                         <span class="text-info fw-bold mb-3">$${p.precio}</span>
-                        <button onclick="addToCart('${p.id}')" class="btn btn-buy w-100 mt-auto">Añadir al Carrito</button>
+                        <button onclick="addToCart('${p.id}')" class="btn btn-buy w-100 mt-auto">Añadir</button>
                     </div>
                 </div>
             </div>
         `).join('');
 
-        adminTable.innerHTML = productos.map(p => `
-            <tr>
+        adminBody.innerHTML = productos.map(p => `
+            <tr class="border-bottom border-white border-opacity-5">
                 <td class="ps-4">
                     <div class="d-flex align-items-center">
                         <img src="${p.imagen}" class="rounded me-3" style="width: 40px; height: 25px; object-fit: cover;">
-                        <span class="fw-semibold">${p.titulo}</span>
+                        <span>${p.titulo}</span>
                     </div>
                 </td>
-                <td><span class="badge bg-secondary">${p.plataforma}</span></td>
-                <td class="text-info fw-bold">$${p.precio}</td>
+                <td><span class="badge bg-dark border border-secondary">${p.plataforma}</span></td>
+                <td class="text-info">$${p.precio}</td>
                 <td class="text-end pe-4">
-                    <button onclick="abrirModalEditar('${p.id}')" class="btn btn-sm btn-link text-warning p-1"><i class="fa-solid fa-pen"></i></button>
-                    <button onclick="eliminarProducto('${p.id}')" class="btn btn-sm btn-link text-danger p-1"><i class="fa-solid fa-trash"></i></button>
+                    <button onclick="abrirModalEditar('${p.id}')" class="btn btn-link text-warning p-1"><i class="fa-solid fa-pen"></i></button>
+                    <button onclick="eliminarProducto('${p.id}')" class="btn btn-link text-danger p-1"><i class="fa-solid fa-trash"></i></button>
                 </td>
             </tr>
         `).join('');
     };
 
     window.addToCart = (id) => {
-        const prod = productos.find(p => p.id === id);
-        if(!prod) return;
-        const existing = cart.find(item => item.id === id);
-        if(existing) existing.cantidad++;
-        else cart.push({...prod, cantidad: 1});
+        const p = productos.find(x => x.id === id);
+        const item = cart.find(c => c.id === id);
+        if (item) item.cantidad++;
+        else cart.push({...p, cantidad: 1});
         updateCartUI();
-        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Añadido', showConfirmButton: false, timer: 1000, background: '#161c2d', color: '#fff' });
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Listo', showConfirmButton: false, timer: 1000, background: '#161c2d', color: '#fff' });
     };
 
     window.updateQty = (index, delta) => {
         cart[index].cantidad += delta;
-        if(cart[index].cantidad <= 0) cart.splice(index, 1);
+        if (cart[index].cantidad <= 0) cart.splice(index, 1);
         updateCartUI();
     };
 
     function updateCartUI() {
-        const totalItems = cart.reduce((acc, item) => acc + item.cantidad, 0);
-        document.getElementById('cart-counter').innerText = totalItems;
-        const container = document.getElementById('cart-items-container');
-        const footer = document.getElementById('cart-footer');
-        const emptyMsg = document.getElementById('cart-empty-msg');
+        const count = cart.reduce((a, b) => a + b.cantidad, 0);
+        document.getElementById('cart-counter').innerText = count;
+        const total = cart.reduce((a, b) => a + (b.precio * b.cantidad), 0).toFixed(2);
         
+        const footer = document.getElementById('cart-footer');
+        const empty = document.getElementById('cart-empty-msg');
+        const container = document.getElementById('cart-items-container');
+
         if (cart.length > 0) {
-            footer.classList.remove('d-none'); emptyMsg.classList.add('d-none');
-            const total = cart.reduce((acc, item) => acc + (item.precio * item.cantidad), 0).toFixed(2);
+            footer.classList.remove('d-none'); empty.classList.add('d-none');
             document.getElementById('cart-total-amount').innerText = `$${total}`;
-            container.innerHTML = cart.map((item, index) => `
-                <div class="mb-3 bg-secondary bg-opacity-10 p-3 rounded-4">
-                    <div class="d-flex align-items-center mb-2">
-                        <img src="${item.imagen}" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                        <div class="flex-grow-1 min-w-0">
-                            <div class="small fw-bold text-truncate">${item.titulo}</div>
-                            <div class="small text-info">$${item.precio} c/u</div>
-                        </div>
+            container.innerHTML = cart.map((item, i) => `
+                <div class="mb-3 bg-white bg-opacity-5 p-3 rounded-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="small fw-bold text-truncate">${item.titulo}</span>
+                        <span class="text-info">$${(item.precio * item.cantidad).toFixed(2)}</span>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center mt-2">
-                        <div class="qty-controls">
-                            <button class="qty-btn" onclick="updateQty(${index}, -1)">-</button>
-                            <span class="small fw-bold">${item.cantidad}</span>
-                            <button class="qty-btn" onclick="updateQty(${index}, 1)">+</button>
-                        </div>
-                        <div class="fw-bold text-white small">$${(item.precio * item.cantidad).toFixed(2)}</div>
+                    <div class="qty-controls" style="width: fit-content;">
+                        <button class="qty-btn" onclick="updateQty(${i}, -1)">-</button>
+                        <span class="px-2 small">${item.cantidad}</span>
+                        <button class="qty-btn" onclick="updateQty(${i}, 1)">+</button>
                     </div>
                 </div>
             `).join('');
         } else {
-            footer.classList.add('d-none'); emptyMsg.classList.remove('d-none'); container.innerHTML = '';
+            footer.classList.add('d-none'); empty.classList.remove('d-none'); container.innerHTML = '';
         }
     }
 
-    window.handleGlobalBack = () => {
-        if (currentView === "receipt") showHome();
-        else if (currentView === "checkout") backToReceipt();
-    };
-
-    function updateNavUI() {
-        const backBtn = document.getElementById('global-back-btn');
-        if (currentView === "home") backBtn.classList.add('disabled');
-        else backBtn.classList.remove('disabled');
-    }
-
-    window.finalizarCompra = () => {
-        if (!cart.length) return;
-        offcanvasCart.hide();
-        currentOrderId = Math.random().toString(36).substr(2, 9).toUpperCase();
-        currentView = "receipt";
-        generarRecibo();
-        updateNavUI();
-    };
-
-    function generarRecibo() {
-        const total = cart.reduce((acc, item) => acc + (item.precio * item.cantidad), 0).toFixed(2);
-        document.getElementById('receipt-order-id').innerText = currentOrderId;
-        document.getElementById('receipt-total').innerText = `$${total}`;
-        document.getElementById('receipt-items-list').innerHTML = cart.map(item => `
-            <tr class="border-bottom border-white border-opacity-5">
-                <td class="py-3"><div class="fw-bold">${item.titulo}</div><div class="x-small text-secondary">${item.plataforma}</div></td>
-                <td class="text-center py-3">x${item.cantidad}</td>
-                <td class="text-end py-3 fw-bold text-info">$${(item.precio * item.cantidad).toFixed(2)}</td>
-            </tr>
-        `).join('');
-        
-        hideAllViews();
-        document.getElementById('view-receipt').style.display = 'block';
-    }
-
-    window.showCheckout = () => {
-        const total = cart.reduce((acc, item) => acc + (item.precio * item.cantidad), 0).toFixed(2);
-        document.getElementById('checkout-final-total').innerText = `$${total}`;
-        currentView = "checkout";
-        hideAllViews();
-        document.getElementById('view-checkout').style.display = 'block';
-        updateNavUI();
-    };
-
-    window.backToReceipt = () => {
-        currentView = "receipt";
-        hideAllViews();
-        document.getElementById('view-receipt').style.display = 'block';
-        updateNavUI();
-    };
-
-    function hideAllViews() {
-        document.getElementById('view-normal').style.display = 'none';
-        document.getElementById('view-receipt').style.display = 'none';
-        document.getElementById('view-checkout').style.display = 'none';
-        document.getElementById('profile-switcher-container').style.display = 'none';
-        document.getElementById('cart-btn-main').style.display = 'none';
-    }
-
+    // --- NAVEGACIÓN ---
     window.showHome = () => {
         currentView = "home";
+        document.querySelectorAll('#main-content > div').forEach(d => d.style.display = 'none');
         document.getElementById('view-normal').style.display = 'block';
-        document.getElementById('view-receipt').style.display = 'none';
-        document.getElementById('view-checkout').style.display = 'none';
         document.getElementById('profile-switcher-container').style.display = 'flex';
         document.getElementById('cart-btn-main').style.display = 'flex';
         updateNavUI();
     };
 
+    window.finalizarCompra = () => {
+        offcanvasCart.hide();
+        currentView = "receipt";
+        const total = cart.reduce((a, b) => a + (b.precio * b.cantidad), 0).toFixed(2);
+        document.getElementById('receipt-order-id').innerText = Math.random().toString(36).substr(2, 9).toUpperCase();
+        document.getElementById('receipt-total').innerText = `$${total}`;
+        document.getElementById('receipt-items-list').innerHTML = cart.map(item => `
+            <tr><td>${item.titulo}</td><td class="text-center">x${item.cantidad}</td><td class="text-end">$${(item.precio * item.cantidad).toFixed(2)}</td></tr>
+        `).join('');
+        
+        document.getElementById('view-normal').style.display = 'none';
+        document.getElementById('view-receipt').style.display = 'block';
+        document.getElementById('profile-switcher-container').style.display = 'none';
+        document.getElementById('cart-btn-main').style.display = 'none';
+        updateNavUI();
+    };
+
+    window.showCheckout = () => {
+        currentView = "checkout";
+        document.getElementById('view-receipt').style.display = 'none';
+        document.getElementById('view-checkout').style.display = 'block';
+        updateNavUI();
+    };
+
+    window.handleGlobalBack = () => {
+        if (currentView === "receipt") showHome();
+        else if (currentView === "checkout") {
+            currentView = "receipt";
+            document.getElementById('view-checkout').style.display = 'none';
+            document.getElementById('view-receipt').style.display = 'block';
+        }
+        updateNavUI();
+    };
+
+    function updateNavUI() {
+        document.getElementById('global-back-btn').classList.toggle('disabled', currentView === 'home');
+    }
+
     document.getElementById('checkoutForm').addEventListener('submit', (e) => {
         e.preventDefault();
-        const name = document.getElementById('cust-name').value;
-        Swal.fire({
-            title: '¡Pago Confirmado!',
-            text: `Gracias ${name}. Tu pedido #${currentOrderId} ha sido procesado exitosamente.`,
-            icon: 'success',
-            background: '#161c2d', color: '#fff',
-            confirmButtonColor: '#00d2ff'
-        }).then(() => {
-            cart = [];
-            updateCartUI();
-            showHome();
-        });
+        Swal.fire({ title: '¡Éxito!', text: 'Pedido procesado.', icon: 'success', background: '#161c2d', color: '#fff' })
+            .then(() => { cart = []; updateCartUI(); showHome(); });
     });
 
-    window.setProfile = (type) => {
-        const isAdmin = type === 'admin';
-        document.getElementById('btn-user').classList.toggle('active', !isAdmin);
-        document.getElementById('btn-admin').classList.toggle('active', isAdmin);
-        document.getElementById('admin-panel').style.display = isAdmin ? 'block' : 'none';
-        document.getElementById('admin-actions').classList.toggle('d-none', !isAdmin);
-        document.getElementById('grid-productos').style.display = isAdmin ? 'none' : 'flex';
-        document.getElementById('view-title').innerText = isAdmin ? 'Gestión de Stock' : 'Catálogo de Juegos';
+    // --- ADMIN ---
+    window.setProfile = (t) => {
+        const admin = t === 'admin';
+        document.getElementById('btn-user').classList.toggle('active', !admin);
+        document.getElementById('btn-admin').classList.toggle('active', admin);
+        document.getElementById('admin-panel').style.display = admin ? 'block' : 'none';
+        document.getElementById('grid-productos').style.display = admin ? 'none' : 'flex';
+        document.getElementById('admin-actions').classList.toggle('d-none', !admin);
     };
 
-    window.abrirModalCrear = () => {
-        document.getElementById('gameForm').reset(); document.getElementById('game-id').value = '';
-        document.getElementById('modalTitle').innerText = 'Registrar Juego'; modal.show();
-    };
-
+    window.abrirModalCrear = () => { document.getElementById('gameForm').reset(); document.getElementById('game-id').value = ''; modal.show(); };
     window.abrirModalEditar = (id) => {
-        const p = productos.find(x => x.id === id); if(!p) return;
-        document.getElementById('game-id').value = p.id; document.getElementById('titulo').value = p.titulo;
-        document.getElementById('plataforma').value = p.plataforma; document.getElementById('precio').value = p.precio;
-        document.getElementById('imagen').value = p.imagen; document.getElementById('modalTitle').innerText = 'Modificar Título';
+        const p = productos.find(x => x.id === id);
+        document.getElementById('game-id').value = p.id;
+        document.getElementById('titulo').value = p.titulo;
+        document.getElementById('plataforma').value = p.plataforma;
+        document.getElementById('precio').value = p.precio;
+        document.getElementById('imagen').value = p.imagen;
         modal.show();
     };
 
     window.procesarFormulario = async () => {
         const id = document.getElementById('game-id').value;
-        const datos = {
+        const data = {
             titulo: document.getElementById('titulo').value,
             plataforma: document.getElementById('plataforma').value,
-            precio: parseFloat(document.getElementById('precio').value) || 0,
-            imagen: document.getElementById('imagen').value || 'https://via.placeholder.com/400x200?text=GAME'
+            precio: parseFloat(document.getElementById('precio').value),
+            imagen: document.getElementById('imagen').value || 'https://via.placeholder.com/400x200'
         };
-        try {
-            if (id) await updateDoc(doc(db, ...gamesCollectionPath, id), datos);
-            else await addDoc(collection(db, ...gamesCollectionPath), datos);
-            modal.hide();
-        } catch (e) { Swal.fire('Error', 'No tienes permisos para editar', 'error'); }
+        if (id) await updateDoc(doc(db, ...gamesPath, id), data);
+        else await addDoc(collection(db, ...gamesPath), data);
+        modal.hide();
     };
 
     window.eliminarProducto = async (id) => {
-        const res = await Swal.fire({ title: '¿Eliminar?', icon: 'warning', showCancelButton: true, background: '#161c2d', color: '#fff' });
-        if (res.isConfirmed) await deleteDoc(doc(db, ...gamesCollectionPath, id));
+        if ((await Swal.fire({ title: '¿Borrar?', showCancelButton: true, background: '#161c2d', color: '#fff' })).isConfirmed)
+            await deleteDoc(doc(db, ...gamesPath, id));
     };
 </script>
 </body>
